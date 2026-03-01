@@ -77,6 +77,7 @@ def run_tasks_api(cap):
             ret, frame = cap.read()
             if not ret:
                 break
+            display_frame = resize_to_screen(frame, max_height=720)
 
             start = time.perf_counter()
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -87,10 +88,10 @@ def run_tasks_api(cap):
             fps = 1 / (end - start)
 
             if result.pose_landmarks:
-                draw_pose_landmarks(frame, result.pose_landmarks[0])
+                draw_pose_landmarks(display_frame, result.pose_landmarks[0])
 
             cv2.putText(
-                frame,
+                display_frame,
                 f"MediaPipe FPS: {fps:.2f}",
                 (20, 50),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -98,11 +99,20 @@ def run_tasks_api(cap):
                 (0, 255, 0),
                 2,
             )
-            cv2.imshow("MediaPipe Pose Estimation", frame)
+            cv2.imshow("MediaPipe Pose Estimation", display_frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
-VIDEO_SOURCE = "test\Most_Push_Ups_in_1_MINUTE_WORLD_RECORD_720P.mp4"
+def resize_to_screen(frame, max_height=800):
+    """Resizes frame to a max height while maintaining aspect ratio."""
+    h, w = frame.shape[:2]
+    if h > max_height:
+        scale = max_height / h
+        new_w = int(w * scale)
+        new_h = int(h * scale)
+        return cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    return frame
+VIDEO_SOURCE = "test\Most_Push_Ups.mp4"
 cap = cv2.VideoCapture(VIDEO_SOURCE)
 
 try:

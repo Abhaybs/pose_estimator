@@ -3,9 +3,19 @@ import cv2
 import time
 
 # Use the 'n' (nano) version for best speed on local systems
+def resize_to_screen(frame, max_height=800):
+    """Resizes frame to a max height while maintaining aspect ratio."""
+    h, w = frame.shape[:2]
+    if h > max_height:
+        scale = max_height / h
+        new_w = int(w * scale)
+        new_h = int(h * scale)
+        return cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    return frame
 model = YOLO('yolov8n-pose.pt') 
-VIDEO_SOURCE = "test\Most_Push_Ups_in_1_MINUTE_WORLD_RECORD_720P.mp4" # Use 0 for webcam, or provide a video file path
+VIDEO_SOURCE = "test\Most_Push_Ups.mp4" # Use 0 for webcam, or provide a video file path
 cap = cv2.VideoCapture(VIDEO_SOURCE)
+
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -20,9 +30,9 @@ while cap.isOpened():
 
     # Plot results on the frame
     annotated_frame = results[0].plot()
-
-    cv2.putText(annotated_frame, f"YOLOv8 FPS: {fps:.2f}", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    cv2.imshow('YOLOv8 Pose Estimation', annotated_frame)
+    display_frame = resize_to_screen(annotated_frame, max_height=720)
+    cv2.putText(display_frame, f"YOLOv8 FPS: {fps:.2f}", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    cv2.imshow('YOLOv8 Pose Estimation', display_frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
